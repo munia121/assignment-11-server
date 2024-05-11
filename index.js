@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 require('dotenv').config();
 const port = process.env.PORT || 5000
@@ -36,13 +36,38 @@ async function run() {
         //     res.send(result)
         // })
 
+
+        app.get('/bookCategory', async (req, res) => {
+            const cursor = categoryCollection.find();
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
         app.post('/addBooks', async (req, res) => {
             const book = req.body;
-            // console.log(book) 
             const result = await bookCollection.insertOne(book);
-            res.send(result);
-            // console.log(result)
+            res.send(result);        
         })
+
+
+        app.get('/bookCategory/:category', async (req, res) => {
+            const id = req.params.category;
+            const query = { category: id };
+            const result = await bookCollection.find(query).toArray();
+            console.log(result)
+            res.send(result);
+        })
+
+        app.get('/bookDetails/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await textileCollection.findOne(query);
+            console.log(result)
+            res.send(result);
+        })
+
+
+
 
 
 
