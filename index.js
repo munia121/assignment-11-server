@@ -66,6 +66,17 @@ async function run() {
             res.send(result);
         })
 
+
+        // 
+        // app.get('/borrow/:email', async (req, res) => {
+        //     const result = await textileCollection.find({ email: req.params.email }).toArray();
+        //     // console.log(result)
+        //     res.send(result)
+        // })
+
+
+
+
         app.patch('/reduceQuantity/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
@@ -78,19 +89,20 @@ async function run() {
 
         app.put('/updateBook/:id', async (req, res) => {
             const id = req.params.id;
-            const updateCraft = req.body;
+            const updateBook = req.body;
+            console.log(updateBook, id)
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
-            const craft = {
+            const book = {
                 $set: {
-                    
+                    ...updateBook,
                 }
             }
-            const result = await textileCollection.updateOne(filter, craft, options);
+            const result = await bookCollection.updateOne(filter, book, options);
             res.send(result)
 
 
-            console.log('update', updateCraft)
+            console.log('update', updateBook)
         })
 
 
