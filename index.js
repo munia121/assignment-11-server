@@ -30,11 +30,11 @@ async function run() {
         const categoryCollection = database.collection("BookCategory");
 
 
-        // app.get('/books', async (req, res) => {
-        //     const cursor = bookCollection.find();
-        //     const result = await cursor.toArray();
-        //     res.send(result)
-        // })
+        app.get('/allBooks', async (req, res) => {
+            const cursor = bookCollection.find();
+            const result = await cursor.toArray();
+            res.send(result)
+        })
 
 
         app.get('/bookCategory', async (req, res) => {
@@ -46,7 +46,7 @@ async function run() {
         app.post('/addBooks', async (req, res) => {
             const book = req.body;
             const result = await bookCollection.insertOne(book);
-            res.send(result);        
+            res.send(result);
         })
 
 
@@ -60,12 +60,38 @@ async function run() {
 
         app.get('/bookDetails/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await textileCollection.findOne(query);
+            const query = { _id: new ObjectId(id) }
+            const result = await bookCollection.findOne(query);
             console.log(result)
             res.send(result);
         })
 
+        app.patch('/reduceQuantity/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await bookCollection.updateOne(query, {
+                $inc: { quantity: -1 }
+            })
+            res.send(result)
+        })
+
+
+        app.put('/updateBook/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateCraft = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const craft = {
+                $set: {
+                    
+                }
+            }
+            const result = await textileCollection.updateOne(filter, craft, options);
+            res.send(result)
+
+
+            console.log('update', updateCraft)
+        })
 
 
 
