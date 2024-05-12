@@ -68,18 +68,30 @@ async function run() {
         })
 
 
-        // 
-        // app.get('/borrow/:email', async (req, res) => {
-        //     const result = await textileCollection.find({ email: req.params.email }).toArray();
-        //     // console.log(result)
-        //     res.send(result)
-        // })
+        
 
         app.post('/borrowBook', async (req, res) => {
             const book = req.body;
             const result = await borrowCollection.insertOne(book);
             res.send(result);
         })
+
+
+        
+        app.get('/BorrowBook/:email', async (req, res) => {
+            const result = await borrowCollection.find({ email: req.params.email }).toArray();
+            // console.log(result)
+            res.send(result)
+        })
+
+        app.delete('/borrowed/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await borrowCollection.deleteOne(query);
+            res.send(result)
+            // console.log('delete id', id)
+        })
+
 
 
 
@@ -90,6 +102,17 @@ async function run() {
                 $inc: { quantity: -1 }
             })
             res.send(result)
+        })
+
+
+        app.patch('/increaseQuantity/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await bookCollection.updateOne(query, {
+                $inc: { quantity: 1 }
+            })
+            res.send(result)
+            console.log(result)
         })
 
 
