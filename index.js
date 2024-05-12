@@ -28,7 +28,8 @@ async function run() {
         const database = client.db("BookLibrary");
         const bookCollection = database.collection("Books");
         const categoryCollection = database.collection("BookCategory");
-
+        const borrowCollection = database.collection("borrowBook");
+        
 
         app.get('/allBooks', async (req, res) => {
             const cursor = bookCollection.find();
@@ -74,6 +75,11 @@ async function run() {
         //     res.send(result)
         // })
 
+        app.post('/borrowBook', async (req, res) => {
+            const book = req.body;
+            const result = await borrowCollection.insertOne(book);
+            res.send(result);
+        })
 
 
 
