@@ -32,6 +32,30 @@ const client = new MongoClient(uri, {
     }
 });
 
+
+const verifyToken = async (req, res, next) => {
+    const token = req?.cookies?.token;
+    console.log(req?.cookies)
+    // console.log('value of token in middleware: ', token)
+
+    if (!token) {
+        return res.status(401).send({ message: 'not authorized' })
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        // error
+        if (err) {
+            // console.log(err)
+            return res.status(401).send({ message: 'unauthorize' })
+        }
+        // if token is valid then it would be decoded
+        // console.log('value in the token', decoded)
+        req.user = decoded;
+        next()
+    })
+
+}
+
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -57,10 +81,24 @@ async function run() {
 
         })
 
+        app.post('/logout', async (req, res) => {
+            const user = req.body
+            console.log('logging out', user)
+            // res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+            res
+                .clearCookie('token', {
+                    maxAge: 0,
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                })
+                .send({ success: true })
+        })
 
 
 
-        app.get('/allBooks', async (req, res) => {
+
+        app.get('/allBooks', verifyToken, async (req, res) => {
             const cursor = bookCollection.find();
             const result = await cursor.toArray();
             res.send(result)
@@ -73,11 +111,12 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/addBooks', async (req, res) => {
+        app.post('/addBooks', verifyToken, async (req, res) => {
             const book = req.body;
             const result = await bookCollection.insertOne(book);
             res.send(result);
         })
+        
 
 
         app.get('/bookCategory/:category', async (req, res) => {
