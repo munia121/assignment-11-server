@@ -3,10 +3,22 @@ const app = express()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 require('dotenv').config();
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 const port = process.env.PORT || 5000
 
-app.use(cors())
+const corsOption = {
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200,
+}
+app.use(cors(corsOption))
 app.use(express.json())
+app.use(cookieParser())
+
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.6irp4bx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -29,7 +41,24 @@ async function run() {
         const bookCollection = database.collection("Books");
         const categoryCollection = database.collection("BookCategory");
         const borrowCollection = database.collection("borrowBook");
-        
+
+        // api toke 
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            // console.log(user)
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res
+                .cookie('token', token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                })
+                .send({ success: true })
+
+        })
+
+
+
 
         app.get('/allBooks', async (req, res) => {
             const cursor = bookCollection.find();
@@ -68,7 +97,7 @@ async function run() {
         })
 
 
-        
+
 
         app.post('/borrowBook', async (req, res) => {
             const book = req.body;
@@ -77,7 +106,7 @@ async function run() {
         })
 
 
-        
+
         app.get('/BorrowBook/:email', async (req, res) => {
             const result = await borrowCollection.find({ email: req.params.email }).toArray();
             // console.log(result)
