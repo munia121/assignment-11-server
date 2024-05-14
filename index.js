@@ -10,7 +10,9 @@ const port = process.env.PORT || 5000
 const corsOption = {
     origin: [
         'http://localhost:5173',
-        'http://localhost:5174',
+        'https://assignment-11-project-2d757.web.app',
+        'https://assignment-11-project-2d757.firebaseapp.com',
+        'https://glittery-palmier-08a14a.netlify.app'
     ],
     credentials: true,
     optionsSuccessStatus: 200,
@@ -36,7 +38,7 @@ const client = new MongoClient(uri, {
 const verifyToken = async (req, res, next) => {
     const token = req?.cookies?.token;
     console.log(req?.cookies)
-    // console.log('value of token in middleware: ', token)
+    console.log('value of token in middleware: ', token)
 
     if (!token) {
         return res.status(401).send({ message: 'not authorized' })
@@ -70,7 +72,7 @@ async function run() {
         app.post('/jwt', async (req, res) => {
             const user = req.body;
             // console.log(user)
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
             res
                 .cookie('token', token, {
                     httpOnly: true,
@@ -99,6 +101,15 @@ async function run() {
 
 
         app.get('/allBooks', verifyToken, async (req, res) => {
+            // if (req.query.email !== req.user.email) {
+            //     return res.status(403).send({ message: 'forbidden access' })
+            // }
+
+            // let query = {};
+            // if (req.query?.email) {
+            //     query = { email: req.query.email }
+            // }
+
             const cursor = bookCollection.find();
             const result = await cursor.toArray();
             res.send(result)
